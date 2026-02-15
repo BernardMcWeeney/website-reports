@@ -1,0 +1,21 @@
+{
+  "name": "website-reports",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=25.0.0 <26"
+  },
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "db:migrate:local": "wrangler d1 execute REPORTS_DB --local --file=./migrations/0001_init.sql",
+    "db:migrate:remote": "wrangler d1 execute REPORTS_DB --remote --file=./migrations/0001_init.sql"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260208.0",
+    "typescript": "^5.6.3",
+    "wrangler": "^4.0.0"
+  }
+}
