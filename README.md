@@ -66,6 +66,37 @@ npm run db:migrate:local
 npm run dev
 ```
 
+## Deploy from local (set secrets + deploy)
+
+1. Set real D1 id in `wrangler.toml`:
+
+```bash
+npx wrangler d1 list
+```
+
+Then copy the `website-reports-db` id into:
+
+```toml
+database_id = "<REAL_D1_ID>"
+```
+
+2. Export required environment variables:
+
+```bash
+export CLOUDFLARE_API_TOKEN="<wrangler_deploy_token>"
+export CF_API_TOKEN="<worker_runtime_cf_api_token>"
+export CF_ACCOUNT_ID="<cloudflare_account_id>"
+export PSI_API_KEY="<google_pagespeed_api_key>"
+# optional
+export RUN_TOKEN="<manual_run_token>"
+```
+
+3. Run:
+
+```bash
+./scripts/deploy-local.sh
+```
+
 ## Manual test run
 
 Generate a specific month (example requested in MVP spec):

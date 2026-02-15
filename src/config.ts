@@ -8,7 +8,7 @@ export interface SiteConfig {
 // MVP prototype: one hardcoded client/site.
 export const SITE_CONFIG: SiteConfig = {
   clientId: "demo-client",
-  zoneId: "REPLACE_WITH_ZONE_ID",
-  domain: "example.com",
-  pagespeedUrls: ["https://example.com/"]
+  zoneId: "d0b44ec1a3c28d4bc2e92312ceb0eb82",
+  domain: "mounthanoverns.ie",
+  pagespeedUrls: ["https://mounthanoverns.ie/"]
 };

@@ -1,4 +1,4 @@
-name = "website-reports-mvp"
+name = "website-reports"
 main = "src/index.ts"
 compatibility_date = "2026-02-15"
 
@@ -6,7 +6,7 @@ compatibility_date = "2026-02-15"
 crons = ["0 6 1 * *"]
 
 [vars]
-REPORT_TIMEZONE = "America/New_York"
+REPORT_TIMEZONE = "Europe/Dublin"
 
 [[r2_buckets]]
 binding = "REPORTS_BUCKET"
@@ -15,4 +15,4 @@ bucket_name = "website-reports-reports"
 [[d1_databases]]
 binding = "REPORTS_DB"
 database_name = "website-reports-db"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_id = "ef0a03f1-0108-47fb-898d-7b4a5d5aed44"
