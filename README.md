@@ -36,7 +36,13 @@ Set with `wrangler secret put`:
 - `CF_API_TOKEN`
 - `CF_ACCOUNT_ID`
 - `PSI_API_KEY`
-- Optional: `RUN_TOKEN` (required by `/run` if set)
+- Optional: `RUN_TOKEN` (required to enable `/run`)
+
+## Private by default
+
+- `wrangler.toml` sets `workers_dev = false`, so no public `*.workers.dev` endpoint is exposed.
+- The worker runs on cron inside your Cloudflare account.
+- `/run` is disabled unless `RUN_TOKEN` secret is configured.
 
 ## Prerequisites
 
@@ -103,7 +109,7 @@ Generate a specific month (example requested in MVP spec):
 
 ```bash
 curl "http://127.0.0.1:8787/run?month=2026-01" \
-  -H "x-run-token: <RUN_TOKEN_IF_SET>"
+  -H "x-run-token: <RUN_TOKEN>"
 ```
 
 Expected response includes generated keys:

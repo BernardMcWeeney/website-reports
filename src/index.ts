@@ -20,11 +20,11 @@ function json(data: unknown, init?: ResponseInit): Response {
   });
 }
 
-function hasValidRunToken(request: Request, env: Env): boolean {
+function getRunAuthError(request: Request, env: Env): string | null {
   if (!env.RUN_TOKEN) {
-    return true;
+    return "Manual /run is disabled. Configure RUN_TOKEN to enable it.";
   }
-  return request.headers.get("x-run-token") === env.RUN_TOKEN;
+  return request.headers.get("x-run-token") === env.RUN_TOKEN ? null : "Unauthorized";
 }
 
 function errorMessage(error: unknown): string {
@@ -47,8 +47,10 @@ const worker: WorkerExport = {
     }
 
     if (url.pathname === "/run" && request.method === "GET") {
-      if (!hasValidRunToken(request, env)) {
-        return json({ ok: false, error: "Unauthorized" }, { status: 401 });
+      const authError = getRunAuthError(request, env);
+      if (authError) {
+        const status = authError === "Unauthorized" ? 401 : 403;
+        return json({ ok: false, error: authError }, { status });
       }
 
       const monthOverride = url.searchParams.get("month") ?? undefined;
@@ -79,7 +81,8 @@ const worker: WorkerExport = {
     if (url.pathname === "/" && request.method === "GET") {
       return json({
         ok: true,
-        routes: ["/health", "/run?month=YYYY-MM"]
+        routes: ["/health"],
+        manualRunEnabled: Boolean(env.RUN_TOKEN)
       });
     }
 
