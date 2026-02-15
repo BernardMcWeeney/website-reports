@@ -64,10 +64,39 @@ export interface LighthouseScores {
   seo: number | null;
 }
 
+export interface CoreWebVital {
+  id: string;
+  title: string;
+  displayValue: string;
+  numericValue: number | null;
+}
+
+export interface PageSpeedOpportunity {
+  title: string;
+  description: string;
+  savingsMs: number;
+}
+
 export interface PageSpeedResult {
   url: string;
   mobile: LighthouseScores;
   desktop: LighthouseScores;
+  mobileVitals: CoreWebVital[];
+  desktopVitals: CoreWebVital[];
+  opportunities: PageSpeedOpportunity[];
+}
+
+export interface WordPressSnapshot {
+  pluginsUpdated: number;
+  totalPlugins: number;
+  coreVersion: string;
+  phpVersion: string;
+  securityScanPassed: boolean;
+  lastBackup: string;
+  sslValid: boolean;
+  databaseOptimized: boolean;
+  uptimePercent: number;
+  malwareDetected: boolean;
 }
 
 export interface TrafficSnapshot {
@@ -92,13 +121,16 @@ export interface ReportSnapshot {
   monthLabel: string;
   timezone: string;
   generatedAt: string;
+  author: string;
   traffic: TrafficSnapshot;
   security: SecuritySnapshot;
   performance: PageSpeedResult[];
+  wordpress: WordPressSnapshot;
   warnings: string[];
 }
 
 export interface GeneratedReport {
+  runId: string;
   monthKey: string;
   htmlKey: string;
   pdfKey: string;

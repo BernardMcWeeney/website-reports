@@ -2,6 +2,10 @@ name = "website-reports"
 main = "src/index.ts"
 compatibility_date = "2026-02-15"
 workers_dev = false
+[observability]
+[observability.logs]
+enabled = true
+invocation_logs = true
 
 [triggers]
 crons = ["0 6 1 * *"]

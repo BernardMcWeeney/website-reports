@@ -72,6 +72,19 @@ npm run db:migrate:local
 npm run dev
 ```
 
+### Local `wrangler dev` secrets
+
+For local runs, create `.dev.vars`:
+
+```bash
+cat > .dev.vars <<'EOF'
+CF_API_TOKEN=your_cloudflare_graphql_and_browser_rendering_token
+CF_ACCOUNT_ID=your_cloudflare_account_id
+PSI_API_KEY=your_google_pagespeed_api_key
+RUN_TOKEN=choose_a_random_manual_run_token
+EOF
+```
+
 ## Deploy from local (set secrets + deploy)
 
 1. Set real D1 id in `wrangler.toml`:
@@ -117,6 +130,7 @@ Expected response includes generated keys:
 ```json
 {
   "ok": true,
+  "runId": "c7d8e0f2-0ccd-4324-8f39-06a9476ea2ab",
   "month": "2026-01",
   "htmlKey": "reports/demo-client/2026-01.html",
   "pdfKey": "reports/demo-client/2026-01.pdf",
@@ -131,3 +145,25 @@ Expected response includes generated keys:
 - `0 6 1 * *` (06:00 UTC on the first day of each month)
 
 The scheduled run defaults to the previous month.
+
+## Troubleshooting
+
+Tail live worker logs:
+
+```bash
+npx wrangler tail website-reports
+```
+
+Check run history in D1:
+
+```bash
+npx wrangler d1 execute REPORTS_DB --remote --command \
+"SELECT run_id, report_month, trigger_type, status, started_at, finished_at, error_message FROM report_runs ORDER BY started_at DESC LIMIT 20;"
+```
+
+Check generated snapshots in D1:
+
+```bash
+npx wrangler d1 execute REPORTS_DB --remote --command \
+"SELECT client_id, report_month, generated_at, r2_pdf_key FROM monthly_reports ORDER BY generated_at DESC LIMIT 20;"
+```

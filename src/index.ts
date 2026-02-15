@@ -62,6 +62,7 @@ const worker: WorkerExport = {
         });
         return json({
           ok: true,
+          runId: result.runId,
           month: result.monthKey,
           htmlKey: result.htmlKey,
           pdfKey: result.pdfKey,

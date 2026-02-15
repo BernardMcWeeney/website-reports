@@ -29,6 +29,15 @@ async function graphqlRequest<T>(
 
   const text = await response.text();
   if (!response.ok) {
+    if (
+      response.status === 400 &&
+      (text.includes("\"code\":10001") || text.includes("Unable to authenticate request"))
+    ) {
+      throw new Error(
+        "Cloudflare GraphQL auth failed. Set a valid CF_API_TOKEN runtime secret. " +
+          "For local wrangler dev, add CF_API_TOKEN to .dev.vars."
+      );
+    }
     throw new Error(`Cloudflare GraphQL request failed (${response.status}): ${text}`);
   }
 
@@ -141,7 +150,7 @@ export async function fetchTopPaths(
         zones(filter: { zoneTag: $zoneTag }) {
           httpRequestsAdaptiveGroups(
             limit: $limit
-            orderBy: [sum_requests_DESC]
+            orderBy: [count_DESC]
             filter: { datetime_geq: $startDateTime, datetime_lt: $endDateTimeExclusive }
           ) {
             dimensions {
@@ -234,39 +243,51 @@ export async function fetchSecurityGroups(
       action: item.dimensions?.action ?? "unknown",
       count: toNumber(item.count)
     }));
-  } catch {
-    const actionOnlyQuery = `
-      query SecurityGroupsFallback(
-        $zoneTag: string!
-        $startDateTime: Time!
-        $endDateTimeExclusive: Time!
-      ) {
-        viewer {
-          zones(filter: { zoneTag: $zoneTag }) {
-            firewallEventsAdaptiveGroups(
-              limit: 500
-              filter: { datetime_geq: $startDateTime, datetime_lt: $endDateTimeExclusive }
-            ) {
-              count
-              dimensions {
-                action
+  } catch (primaryError: unknown) {
+    const errorMsg = String(primaryError);
+    // Zone doesn't have access (plan limitation) — return empty gracefully
+    if (errorMsg.includes("does not have access")) {
+      return [];
+    }
+
+    // Try fallback with action-only query
+    try {
+      const actionOnlyQuery = `
+        query SecurityGroupsFallback(
+          $zoneTag: string!
+          $startDateTime: Time!
+          $endDateTimeExclusive: Time!
+        ) {
+          viewer {
+            zones(filter: { zoneTag: $zoneTag }) {
+              firewallEventsAdaptiveGroups(
+                limit: 500
+                filter: { datetime_geq: $startDateTime, datetime_lt: $endDateTimeExclusive }
+              ) {
+                count
+                dimensions {
+                  action
+                }
               }
             }
           }
         }
-      }
-    `;
+      `;
 
-    const actionOnlyData = await graphqlRequest<SecurityActionOnlyQueryResponse>(env, actionOnlyQuery, {
-      zoneTag: zoneId,
-      startDateTime,
-      endDateTimeExclusive
-    });
-    const actionOnlyGroups = actionOnlyData.viewer?.zones?.[0]?.firewallEventsAdaptiveGroups ?? [];
-    return actionOnlyGroups.map((item) => ({
-      source: "unknown",
-      action: item.dimensions?.action ?? "unknown",
-      count: toNumber(item.count)
-    }));
+      const actionOnlyData = await graphqlRequest<SecurityActionOnlyQueryResponse>(env, actionOnlyQuery, {
+        zoneTag: zoneId,
+        startDateTime,
+        endDateTimeExclusive
+      });
+      const actionOnlyGroups = actionOnlyData.viewer?.zones?.[0]?.firewallEventsAdaptiveGroups ?? [];
+      return actionOnlyGroups.map((item) => ({
+        source: "unknown",
+        action: item.dimensions?.action ?? "unknown",
+        count: toNumber(item.count)
+      }));
+    } catch {
+      // Both queries failed — return empty
+      return [];
+    }
   }
 }
